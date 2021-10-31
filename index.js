@@ -31,6 +31,7 @@ async function server() {
     const placesCollection = database.collection("places");
     const guidesCollection = database.collection("guides");
     const usersCollection = database.collection('users');
+    const bookingsCollection = database.collection('bookings');
 
     // GET Places:
     app.get("/places", async (req, res) => {
@@ -39,20 +40,28 @@ async function server() {
       res.send(places);
     });
 
-    //POST Places:
+    // GET SPECIFIC PLACE:
+    app.get("/places/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const place = await placesCollection.findOne(query);
+        res.json(place);
+    });
+
+    //POST PLACES:
     app.post("/places", async (req, res) => {
       const place = req.body;
       const result = await placesCollection.insertOne(place);
       res.json(result);
     });
-    // GET Guides:
+    // GET GUIDES:
     app.get("/guides", async (req, res) => {
       const cursor = guidesCollection.find({});
       const guides = await cursor.toArray();
       res.send(guides);
     });
 
-    //POST Guides:
+    //POST GUIDES:
     app.post("/guides", async (req, res) => {
       const guide = req.body;
       const result = await guidesCollection.insertOne(guide);
@@ -123,7 +132,29 @@ async function server() {
         const query = {_id: ObjectId(id)};
         const user = await usersCollection.deleteOne(query);
         res.json(user);
-    })
+    });
+
+    //GET API FOR BOOKING:
+    app.get('/bookings', async(req, res) =>{
+      const cursor = bookingsCollection.find({});
+      const bookings = await cursor.toArray();
+      res.send(bookings);
+  })
+
+  //POST BOOKINGS:
+  app.post('/bookings', async(req, res) =>{
+    const booking = req.body;
+    const result = await bookingsCollection.insertOne(user);
+    res.json(result);
+})
+
+//GET API FOR SPECIFIC BOOKING:
+app.get("/bookings/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: ObjectId(id) };
+  const booking = await bookingsCollection.findOne(query);
+  res.json(booking);
+});
 
   } finally {
     // await client.close();
