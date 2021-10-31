@@ -30,6 +30,7 @@ async function server() {
     const database = client.db("travel-mania-users");
     const placesCollection = database.collection("places");
     const guidesCollection = database.collection("guides");
+    const usersCollection = database.collection('users');
 
     // GET Places:
     app.get("/places", async (req, res) => {
@@ -66,7 +67,7 @@ async function server() {
       res.json(result);
     });
 
-    //UPDATE API OF SPECIFIC ID:
+    //UPDATE API OF SPECIFIC GUIDE:
     app.put("/guides/:id", async (req, res) => {
         const id = req.params.id;
         const filter = { _id: ObjectId(id) };
@@ -93,6 +94,36 @@ async function server() {
         const result = await guidesCollection.deleteOne(query);
         res.json(result);
       });
+
+    //POST USERS:
+    app.post('/users', async(req, res) =>{
+        const user = req.body;
+        const result = await usersCollection.insertOne(user);
+        res.json(result);
+    })
+
+    //GET USERS:
+    app.get('/users', async(req, res) =>{
+        const cursor = usersCollection.find({});
+        const users = await cursor.toArray();
+        res.send(users);
+    })
+
+    //GET API FOR SPECIFIC USER:
+    app.get("/users/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const user = await usersCollection.findOne(query);
+        res.json(user);
+      });
+    
+    //DELETE SPECIFIC USER:
+    app.delete('/users/:id', async(req, res) =>{
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const user = await usersCollection.deleteOne(query);
+        res.json(user);
+    })
 
   } finally {
     // await client.close();
