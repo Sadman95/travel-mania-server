@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const cors = require('cors');
-require('dotenv').config();
-const { MongoClient } = require('mongodb');
-
+const cors = require("cors");
+require("dotenv").config();
+const { MongoClient } = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 
 const port = process.env.PORT || 5555;
 
@@ -18,35 +18,93 @@ pass: pRdeZQ3d8tts9zB6
  */
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.a65gj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-async function server(){
-    try{
-        await client.connect();
-        
-        const database = client.db('travel-mania-users');
-        const travelsCollection = database.collection('travels');
+async function server() {
+  try {
+    await client.connect();
 
-        const test = {
-            igmUrl: 'https://i.ibb.co/qshPrpB/plitvice-lakesjpg.jpg',
-            title: 'Plitvice Lakes, Croatia',
-            details: 'The Plitvice Lakes can be found on Croatia’s Adriatic Sea coast, just lingering on the border between Zadar and the nation’s capital, Zagreb.These lakes consist of 16 bodies of water that are all joined together by a variety of cascading waterfalls and fascinating bridges, flanked by age-old emerald forests that hold wildlife aplenty: birds, wolves, bears, and more!'
-        }
-        const result = await travelsCollection.insertOne(test);
-        console.log(`A document was inserted with the _id: ${result.insertedId}`);
-    }
-    finally{
-        // await client.close();
-    }
+    const database = client.db("travel-mania-users");
+    const placesCollection = database.collection("places");
+    const guidesCollection = database.collection("guides");
+
+    // GET Places:
+    app.get("/places", async (req, res) => {
+      const cursor = placesCollection.find({});
+      const places = await cursor.toArray();
+      res.send(places);
+    });
+
+    //POST Places:
+    app.post("/places", async (req, res) => {
+      const place = req.body;
+      const result = await placesCollection.insertOne(place);
+      res.json(result);
+    });
+    // GET Guides:
+    app.get("/guides", async (req, res) => {
+      const cursor = guidesCollection.find({});
+      const guides = await cursor.toArray();
+      res.send(guides);
+    });
+
+    //POST Guides:
+    app.post("/guides", async (req, res) => {
+      const guide = req.body;
+      const result = await guidesCollection.insertOne(guide);
+      res.json(result);
+    });
+
+    //GET API FOR SPECIFIC ID:
+    app.get("/guides/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await guidesCollection.findOne(query);
+      res.json(result);
+    });
+
+    //UPDATE API OF SPECIFIC ID:
+    app.put("/guides/:id", async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const options = { upsert: true };
+        const updateGuideDoc = {
+          $set: {
+            name: req.body.name,
+            email: req.body.email,
+            image: req.body.image,
+          },
+        };
+        const result = await guidesCollection.updateOne(
+          filter,
+          updateGuideDoc,
+          options
+        );
+        res.json(result);
+      });
+
+    //DELETE GUIDE FROM EXISTING GUIDES:
+    app.delete("/guides/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await guidesCollection.deleteOne(query);
+        res.json(result);
+      });
+
+  } finally {
+    // await client.close();
+  }
 }
 
 server().catch(console.dir);
 
-app.get('/', (req, res) =>{
-    res.send('running travel mania server');
-})
+app.get("/", (req, res) => {
+  res.send("running travel mania server");
+});
 
-app.listen(port, () =>{
-    console.log('running travel-mania at port ', port);
-})
-
+app.listen(port, () => {
+  console.log("running travel-mania at port ", port);
+});
