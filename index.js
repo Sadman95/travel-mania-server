@@ -11,11 +11,7 @@ const port = process.env.PORT || 5555;
 app.use(cors());
 app.use(express.json());
 
-//DB INFO:
-/* 
-user: travel-mania_db
-pass: pRdeZQ3d8tts9zB6
- */
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.a65gj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
