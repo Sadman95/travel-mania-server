@@ -48,6 +48,14 @@ async function server() {
         res.json(place);
     });
 
+    // delete SPECIFIC PLACE:
+    app.delete("/places/:id", async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const place = await placesCollection.deleteOne(query);
+        res.json(place);
+    });
+
     //POST PLACES:
     app.post("/places", async (req, res) => {
       const place = req.body;
@@ -142,9 +150,9 @@ async function server() {
   })
 
   //POST BOOKINGS:
-  app.post('/bookings', async(req, res) =>{
+  app.post('/bookings/:id', async(req, res) =>{
     const booking = req.body;
-    const result = await bookingsCollection.insertOne(user);
+    const result = await bookingsCollection.insertOne(booking);
     res.json(result);
 })
 
@@ -155,6 +163,13 @@ app.get("/bookings/:id", async (req, res) => {
   const booking = await bookingsCollection.findOne(query);
   res.json(booking);
 });
+//Delete order/booking:
+app.delete('/bookings/:id', async(req, res)=>{
+  const id = req.params.id;
+  const query = {_id: ObjectId(id)};
+  const result = await bookingsCollection.deleteOne(query);
+  res.json(result);
+})
 
   } finally {
     // await client.close();
